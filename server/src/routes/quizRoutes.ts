@@ -6,6 +6,14 @@ import { generateQuestions } from '../controllers/quizController';
 
 const router = Router();
 
+type SubmitPayload = {
+    role?: string;
+    difficulty?: string;
+    score: number;
+    totalQuestions: number;
+    answers: Record<number, string> | Array<{ questionIndex: number; userAnswer: string; isCorrect: boolean }>;
+};
+
 // POST /api/quiz/generate
 router.post('/generate', auth, generateQuestions);
 
@@ -18,15 +26,9 @@ router.post('/submit', auth, async (req: AuthRequest, res) => {
             return;
         }
 
-        const { role, difficulty, score, totalQuestions, answers } = req.body as {
-            role?: string;
-            difficulty?: string;
-            score: number;
-            totalQuestions: number;
-            answers: any;
-        };
+        const { role, difficulty, score, totalQuestions, answers } = req.body as SubmitPayload;
 
-        if (!role || !difficulty || typeof score !== 'number' || typeof totalQuestions !== 'number' || !answers) {
+        if (!role || typeof score !== 'number' || typeof totalQuestions !== 'number' || !answers) {
             res.status(400).json({ message: 'Invalid payload.' });
             return;
         }

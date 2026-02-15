@@ -1,10 +1,13 @@
 import mongoose from 'mongoose';
 
-const MONGO_URI =
-    process.env.MONGO_URI ||
-    'mongodb+srv://hireready-user:hireready123@cluster1.urwgfxq.mongodb.net/hireready?retryWrites=true&w=majority';
-
 const connectDB = async (): Promise<void> => {
+    const MONGO_URI = process.env.MONGO_URI;
+    
+    if (!MONGO_URI) {
+        console.error('❌ MONGO_URI is not defined in environment variables');
+        process.exit(1);
+    }
+
     try {
         const conn = await mongoose.connect(MONGO_URI);
         console.log(`✅ MongoDB connected: ${conn.connection.host}`);

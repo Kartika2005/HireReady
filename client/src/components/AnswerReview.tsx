@@ -1,13 +1,13 @@
-import PropTypes from "prop-types";
+import { Question } from "../lib/types";
 
 const LETTERS = ["A", "B", "C", "D"];
 const LABEL_RE = /^([A-D])[.)-]\s*/i;
 
-function normalizeOption(option) {
+function normalizeOption(option: string): string {
   return option.replace(LABEL_RE, "").trim();
 }
 
-function resolveCorrectText(question) {
+function resolveCorrectText(question: Question): string {
   const answer = question.correctAnswer;
   const index = LETTERS.indexOf(answer);
   if (index >= 0 && question.options[index]) {
@@ -16,7 +16,12 @@ function resolveCorrectText(question) {
   return answer;
 }
 
-export default function AnswerReview({ questions, userAnswers }) {
+interface AnswerReviewProps {
+  questions: Question[];
+  userAnswers: Record<number, string>;
+}
+
+export default function AnswerReview({ questions, userAnswers }: AnswerReviewProps) {
   const total = questions.length;
   const correctCount = questions.reduce((count, question, index) => {
     const userAnswer = userAnswers[index];
@@ -97,15 +102,3 @@ export default function AnswerReview({ questions, userAnswers }) {
     </div>
   );
 }
-
-AnswerReview.propTypes = {
-  questions: PropTypes.arrayOf(
-    PropTypes.shape({
-      question: PropTypes.string.isRequired,
-      options: PropTypes.arrayOf(PropTypes.string).isRequired,
-      correctAnswer: PropTypes.string.isRequired,
-      explanation: PropTypes.string.isRequired
-    })
-  ).isRequired,
-  userAnswers: PropTypes.arrayOf(PropTypes.string).isRequired
-};
