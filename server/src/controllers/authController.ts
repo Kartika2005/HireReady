@@ -146,4 +146,3 @@ export const setRole = async (req: AuthRequest, res: Response): Promise<void> =>
         res.status(500).json({ message: 'Internal server error.' });
     }
 };
->>>>>>> upstream/main
