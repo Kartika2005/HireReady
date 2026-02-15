@@ -13,6 +13,7 @@ export interface IUser extends Document {
     resumePath: string;
     resumeText: string;
     extractedSkills: string[];
+    selectedRole: string;
     programmingLanguages: string[];
     matchedRoles: IMatchedRole[];
     createdAt: Date;
@@ -54,6 +55,10 @@ const userSchema = new Schema<IUser>(
         extractedSkills: {
             type: [String],
             default: [],
+        },
+        selectedRole: {
+            type: String,
+            default: '',
         },
         programmingLanguages: {
             type: [String],

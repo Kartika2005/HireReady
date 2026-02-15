@@ -1,6 +1,7 @@
 import { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import ThemeToggle from '../components/ThemeToggle';
 
 function SignupPage() {
     const [name, setName] = useState('');
@@ -28,6 +29,9 @@ function SignupPage() {
 
     return (
         <div className="auth-layout">
+            <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 1000 }}>
+                <ThemeToggle />
+            </div>
             <div className="auth-container">
                 <div className="auth-card">
                     <div className="auth-header">

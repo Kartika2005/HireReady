@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
 const api = axios.create({
     baseURL: '/api',
@@ -8,9 +8,10 @@ const api = axios.create({
 });
 
 // Attach JWT token to every request if available
-api.interceptors.request.use((config) => {
+api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('hireready_token');
     if (token) {
+        config.headers = config.headers || {};
         config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -18,8 +19,8 @@ api.interceptors.request.use((config) => {
 
 // Handle 401 responses globally
 api.interceptors.response.use(
-    (response) => response,
-    (error) => {
+    (response: AxiosResponse) => response,
+    (error: AxiosError) => {
         if (error.response?.status === 401) {
             localStorage.removeItem('hireready_token');
             localStorage.removeItem('hireready_user');

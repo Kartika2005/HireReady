@@ -12,6 +12,7 @@ interface User {
     email: string;
     hasResume: boolean;
     extractedSkills: string[];
+    selectedRole: string;
     programmingLanguages: string[];
     matchedRoles: MatchedRole[];
 }
@@ -80,7 +81,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             headers: { 'Content-Type': 'multipart/form-data' },
         });
 
-        const { extractedSkills, programmingLanguages, matchedRoles } = response.data.data;
+        const payload = response.data?.data || response.data || {};
+        const { extractedSkills, programmingLanguages, matchedRoles, selectedRole } = payload;
 
         // Update user state with all resume-derived data
         if (user) {
@@ -88,6 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 ...user,
                 hasResume: true,
                 extractedSkills,
+                selectedRole: selectedRole || user.selectedRole,
                 programmingLanguages,
                 matchedRoles,
             });

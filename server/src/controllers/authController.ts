@@ -17,6 +17,7 @@ const buildUserResponse = (user: any) => ({
     email: user.email,
     hasResume: !!user.resumeText,
     extractedSkills: user.extractedSkills || [],
+    selectedRole: user.selectedRole || '',
     programmingLanguages: user.programmingLanguages || [],
     matchedRoles: user.matchedRoles || [],
 });
@@ -114,6 +115,34 @@ export const getProfile = async (req: AuthRequest, res: Response): Promise<void>
         });
     } catch (error) {
         console.error('Profile error:', error);
+        res.status(500).json({ message: 'Internal server error.' });
+    }
+};
+
+// POST /api/auth/set-role
+export const setRole = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        const { selectedRole } = req.body as { selectedRole?: string };
+        if (!selectedRole || !selectedRole.trim()) {
+            res.status(400).json({ message: 'selectedRole is required.' });
+            return;
+        }
+
+        const userId = req.user?.id || req.userId;
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { selectedRole: selectedRole.trim() },
+            { new: true }
+        );
+
+        if (!user) {
+            res.status(404).json({ message: 'User not found.' });
+            return;
+        }
+
+        res.status(200).json({ message: 'Role updated.', selectedRole: user.selectedRole });
+    } catch (error) {
+        console.error('Set role error:', error);
         res.status(500).json({ message: 'Internal server error.' });
     }
 };
