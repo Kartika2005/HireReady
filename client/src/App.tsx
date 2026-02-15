@@ -8,6 +8,7 @@ import ProfilePage from "./pages/ProfilePage";
 import ResumeUploadPage from "./pages/ResumeUploadPage";
 import SkillAnalysisPage from "./pages/SkillAnalysisPage";
 import MockTestPage from "./pages/MockTestPage";
+import QuizzesPage from "./pages/QuizzesPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useAuth } from "./context/AuthContext";
 
@@ -67,6 +68,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <SkillAnalysisPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/quizzes"
+        element={
+          <ProtectedRoute>
+            <QuizzesPage />
           </ProtectedRoute>
         }
       />

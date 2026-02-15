@@ -161,14 +161,18 @@ export const getResumeText = async (req: AuthRequest, res: Response): Promise<vo
 // GET /api/resume/download
 export const downloadResume = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const user = await User.findById(req.userId);
+        const userId = req.user?.id || req.userId;
+        const user = await User.findById(userId);
         if (!user || !user.resumePath) {
-            res.status(404).json({ message: 'No resume found.' });
+            console.log('Download: No resume found for user', userId);
+            res.status(404).json({ message: 'No resume found. Please upload a resume first.' });
             return;
         }
 
+        console.log('Download: resumePath =', user.resumePath, 'exists =', fs.existsSync(user.resumePath));
+
         if (!fs.existsSync(user.resumePath)) {
-            res.status(404).json({ message: 'Resume file not found on server.' });
+            res.status(404).json({ message: 'Resume file not found on server. Please re-upload your resume.' });
             return;
         }
 

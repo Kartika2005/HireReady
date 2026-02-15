@@ -4,6 +4,7 @@ export interface IResult extends Document {
     userId: mongoose.Types.ObjectId;
     email: string;
     role: string;
+    difficulty: string;
     score: number;
     totalQuestions: number;
     answers: Record<string, string>;
@@ -27,6 +28,11 @@ const resultSchema = new Schema<IResult>(
             type: String,
             required: true,
         },
+        difficulty: {
+            type: String,
+            enum: ['Low', 'Medium', 'High'],
+            default: 'Medium',
+        },
         score: {
             type: Number,
             required: true,
@@ -41,7 +47,7 @@ const resultSchema = new Schema<IResult>(
         },
     },
     {
-        timestamps: { createdAt: true, updatedAt: false },
+        timestamps: true,
     }
 );
 

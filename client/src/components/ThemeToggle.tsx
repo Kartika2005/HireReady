@@ -10,7 +10,7 @@ export default function ThemeToggle() {
       onClick={toggleTheme}
       title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
     >
-      {theme === "dark" ? "☀️ Light mode" : "🌙 Dark mode"}
+      {theme === "dark" ? "☀️" : "🌙"}
     </button>
   );
 }

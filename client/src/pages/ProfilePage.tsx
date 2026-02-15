@@ -72,6 +72,15 @@ function ProfilePage() {
         try {
             setDownloadError('');
             const response = await api.get('/resume/download', { responseType: 'blob' });
+
+            // Check if the response is actually an error JSON (server returned 404 but with blob responseType)
+            if (response.data.type === 'application/json') {
+                const text = await response.data.text();
+                const json = JSON.parse(text);
+                setDownloadError(json.message || 'Failed to download resume.');
+                return;
+            }
+
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
             link.href = url;
@@ -80,8 +89,13 @@ function ProfilePage() {
             link.click();
             link.remove();
             window.URL.revokeObjectURL(url);
-        } catch {
-            setDownloadError('Failed to download resume.');
+        } catch (err: any) {
+            console.error('Resume download error:', err);
+            const msg = err?.response?.data?.message
+                || (err?.response?.data instanceof Blob
+                    ? 'Resume file not found. Please check if the uploaded document is valid.'
+                    : 'Failed to download resume.');
+            setDownloadError(msg);
         }
     };
 
@@ -92,15 +106,17 @@ function ProfilePage() {
             <nav className="dashboard-nav">
                 <div className="dashboard-nav-logo">HireReady</div>
                 <div className="dashboard-nav-actions">
-                    <ThemeToggle />
+                    <button className="btn btn-ghost nav-tab" onClick={() => navigate('/dashboard')}>
+                        🏠 Dashboard
+                    </button>
                     <button className="btn btn-ghost nav-tab" onClick={() => navigate('/skill-analysis')}>
                         🛠️ Skill Analysis
                     </button>
+                    <button className="btn btn-ghost nav-tab" onClick={() => navigate('/quizzes')}>
+                        📝 Quizzes
+                    </button>
                     <button className="btn btn-ghost nav-tab nav-tab-active" onClick={() => navigate('/profile')}>
                         👤 Profile
-                    </button>
-                    <button className="btn btn-ghost nav-tab" onClick={() => navigate('/dashboard')}>
-                        🏠 Dashboard
                     </button>
                 </div>
             </nav>
@@ -115,12 +131,15 @@ function ProfilePage() {
 
                 {/* User Info Card */}
                 <div className="profile-card" style={{ marginBottom: '1.5rem' }}>
-                    <div className="profile-card-header">
-                        <div className="profile-avatar">{getInitials(user.name)}</div>
-                        <div className="profile-info">
-                            <h2>{user.name}</h2>
-                            <p>{user.email}</p>
+                    <div className="profile-card-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <div className="profile-avatar">{getInitials(user.name)}</div>
+                            <div className="profile-info">
+                                <h2>{user.name}</h2>
+                                <p>{user.email}</p>
+                            </div>
                         </div>
+                        <ThemeToggle />
                     </div>
                     <div className="profile-detail-grid" style={{ marginTop: '1rem' }}>
                         <div className="profile-detail-item">
@@ -230,14 +249,14 @@ function ProfilePage() {
                                                                 percentage >= 70
                                                                     ? 'rgba(74, 222, 128, 0.2)'
                                                                     : percentage >= 50
-                                                                    ? 'rgba(251, 191, 36, 0.2)'
-                                                                    : 'rgba(248, 113, 113, 0.2)',
+                                                                        ? 'rgba(251, 191, 36, 0.2)'
+                                                                        : 'rgba(248, 113, 113, 0.2)',
                                                             color:
                                                                 percentage >= 70
                                                                     ? '#4ade80'
                                                                     : percentage >= 50
-                                                                    ? '#fbbf24'
-                                                                    : '#f87171',
+                                                                        ? '#fbbf24'
+                                                                        : '#f87171',
                                                         }}
                                                     >
                                                         {percentage}%

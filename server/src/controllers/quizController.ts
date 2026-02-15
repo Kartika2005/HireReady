@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import Groq from 'groq-sdk';
+import Quiz from '../models/Quiz';
+import { AuthRequest } from '../middleware/auth';
 
 type Difficulty = 'Low' | 'Medium' | 'High';
 
@@ -16,8 +18,8 @@ function buildPrompt(role: string, difficulty: Difficulty) {
         difficulty === 'Low'
             ? 'Generate 10 MCQ questions ONLY (no code snippets) suitable for beginners. All questions must have type: "mcq".'
             : difficulty === 'Medium'
-            ? 'Generate 10 mixed questions of intermediate complexity. Mix regular MCQs (type: "mcq") and code snippet MCQs (type: "snippet"). Include at least 4 code snippet questions.'
-            : 'Generate 10 mixed questions with advanced difficulty. Mix regular MCQs (type: "mcq") and code snippet MCQs (type: "snippet"). Include at least 5 code snippet questions with complex problems.';
+                ? 'Generate 10 mixed questions of intermediate complexity. Mix regular MCQs (type: "mcq") and code snippet MCQs (type: "snippet"). Include at least 4 code snippet questions.'
+                : 'Generate 10 mixed questions with advanced difficulty. Mix regular MCQs (type: "mcq") and code snippet MCQs (type: "snippet"). Include at least 5 code snippet questions with complex problems.';
 
     return `You are an expert interviewer. Generate exactly 10 questions for the selected role and difficulty level.
 
@@ -56,7 +58,7 @@ function parseQuestions(text: string) {
     }
 }
 
-export const generateQuestions = async (req: Request, res: Response) => {
+export const generateQuestions = async (req: AuthRequest, res: Response) => {
     try {
         const groqApiKey = process.env.GROQ_API_KEY;
         if (!groqApiKey) {
@@ -65,6 +67,12 @@ export const generateQuestions = async (req: Request, res: Response) => {
         }
 
         const groq = new Groq({ apiKey: groqApiKey });
+
+        const userId = req.user?.id || req.userId;
+        if (!userId) {
+            res.status(401).json({ message: 'Authentication required.' });
+            return;
+        }
 
         const { role, difficulty } = req.body as { role?: string; difficulty?: Difficulty };
 
@@ -90,12 +98,19 @@ export const generateQuestions = async (req: Request, res: Response) => {
         const content = response.choices[0]?.message?.content ?? '';
         const questions = parseQuestions(content);
 
-        if (!questions || questions.length !== 10) {
+        if (!questions || questions.length < 8) {
             res.status(500).json({ message: 'Failed to generate full test. Please retry.' });
             return;
         }
 
-        res.status(200).json({ questions });
+        // Save quiz to DB for local evaluation later
+        const quiz = await Quiz.create({
+            userId,
+            role: trimmedRole,
+            questions,
+        });
+
+        res.status(200).json({ questions, quizId: quiz._id });
     } catch (error: any) {
         console.error('Generate quiz error:', error);
         res.status(500).json({ message: error?.message || 'Failed to generate quiz questions.' });

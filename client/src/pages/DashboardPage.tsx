@@ -1,13 +1,9 @@
-import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import ThemeToggle from '../components/ThemeToggle';
 
 function DashboardPage() {
     const { user } = useAuth();
     const navigate = useNavigate();
-    const [roleError, setRoleError] = useState('');
-
 
     if (!user) return null;
 
@@ -16,40 +12,27 @@ function DashboardPage() {
             <nav className="dashboard-nav">
                 <div className="dashboard-nav-logo">HireReady</div>
                 <div className="dashboard-nav-actions">
-                    <ThemeToggle />
+                    <button className="btn btn-ghost nav-tab nav-tab-active" onClick={() => navigate('/dashboard')}>
+                        🏠 Dashboard
+                    </button>
                     <button className="btn btn-ghost nav-tab" onClick={() => navigate('/skill-analysis')}>
                         🛠️ Skill Analysis
                     </button>
+                    <button className="btn btn-ghost nav-tab" onClick={() => navigate('/quizzes')}>
+                        📝 Quizzes
+                    </button>
                     <button className="btn btn-ghost nav-tab" onClick={() => navigate('/profile')}>
                         👤 Profile
-                    </button>
-                    <button className="btn btn-ghost nav-tab nav-tab-active" onClick={() => navigate('/dashboard')}>
-                        🏠 Dashboard
                     </button>
                 </div>
             </nav>
 
             <div className="dashboard-content">
-                <div className="dashboard-welcome">
-                    <h1>Welcome back, {user.name.split(' ')[0]}!</h1>
-                    <p>Your placement readiness hub.</p>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', color: 'var(--text-muted)', textAlign: 'center' }}>
+                    <span style={{ fontSize: '3rem', marginBottom: '1rem' }}>🚀</span>
+                    <h2 style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Coming Soon</h2>
+                    <p style={{ fontSize: '0.95rem' }}>We're building something awesome. Stay tuned!</p>
                 </div>
-
-                <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                    <button className="btn btn-primary" onClick={() => navigate('/resume')}>
-                        Upload Resume
-                    </button>
-                    <button
-                        className="btn btn-primary"
-                        onClick={() => {
-                            setRoleError('');
-                            navigate('/mocktest');
-                        }}
-                    >
-                        Start Mock Test
-                    </button>
-                </div>
-                {roleError && <div className="alert alert-error">{roleError}</div>}
             </div>
         </div>
     );
