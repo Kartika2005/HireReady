@@ -1,13 +1,18 @@
 import { Request, Response } from 'express';
 import path from 'path';
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
 import fs from 'fs';
 import multer from 'multer';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const pdfParse = require('pdf-parse');
+import pdfParse from 'pdf-parse';
+import mongoose from 'mongoose';
 import User from '../models/User';
 import { AuthRequest } from '../middleware/auth';
 import { extractSkills, extractProgrammingLanguages } from '../services/skillExtractor';
 import { matchRoles } from '../services/roleMatcher';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Configure multer storage
 const storage = multer.diskStorage({
@@ -43,8 +48,14 @@ export const upload = multer({
 // POST /api/resume/upload
 export const uploadResume = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        if (mongoose.connection.readyState !== 1) {
+            res.status(503).json({ message: 'Database not connected. Please try again shortly.' });
+            return;
+        }
+
+        console.log('Resume received:', req.file);
         if (!req.file) {
-            res.status(400).json({ message: 'No file uploaded. Please upload a PDF file.' });
+            res.status(400).json({ message: 'No resume uploaded' });
             return;
         }
 
@@ -77,16 +88,19 @@ export const uploadResume = async (req: AuthRequest, res: Response): Promise<voi
 
         // 4. Match roles using cosine similarity
         const matchedRoles = matchRoles(extractedSkills);
+        const selectedRole = matchedRoles.length > 0 ? matchedRoles[0].role : '';
 
         // 5. Update user profile with all derived data
+        const userId = req.user?.id || req.userId;
         const user = await User.findByIdAndUpdate(
-            req.userId,
+            userId,
             {
                 resumePath: req.file.path,
                 resumeText,
                 extractedSkills,
                 programmingLanguages,
                 matchedRoles,
+                selectedRole,
             },
             { new: true }
         );
@@ -98,22 +112,25 @@ export const uploadResume = async (req: AuthRequest, res: Response): Promise<voi
 
         res.status(200).json({
             message: 'Resume processed successfully.',
+            extractedSkills,
+            selectedRole,
             data: {
                 filename: req.file.filename,
                 size: req.file.size,
                 extractedSkills,
                 programmingLanguages,
                 matchedRoles,
+                selectedRole,
                 textPreview: resumeText.substring(0, 200) + (resumeText.length > 200 ? '...' : ''),
             },
         });
     } catch (error: any) {
-        console.error('Resume upload error:', error);
+        console.error('Resume error:', error);
         if (error.message === 'Only PDF files are allowed.') {
             res.status(400).json({ message: error.message });
             return;
         }
-        res.status(500).json({ message: 'Failed to process resume. Please try again.' });
+        res.status(500).json({ message: error?.message || 'Failed to process resume. Please try again.' });
     }
 };
 

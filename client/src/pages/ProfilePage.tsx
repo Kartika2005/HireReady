@@ -1,12 +1,58 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import ThemeToggle from '../components/ThemeToggle';
+
+type ResultRecord = {
+    id: string;
+    _id?: string;
+    email: string;
+    role: string;
+    score: number;
+    totalQuestions: number;
+    createdAt: string;
+};
 
 function ProfilePage() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const [downloadError, setDownloadError] = useState('');
+    const [historyRecords, setHistoryRecords] = useState<ResultRecord[]>([]);
+    const [historyLoading, setHistoryLoading] = useState(true);
+
+    useEffect(() => {
+        let mounted = true;
+
+        async function loadHistory() {
+            try {
+                setHistoryLoading(true);
+                const response = await api.get('/quiz/results');
+
+                if (!mounted) return;
+
+                const results = (response.data?.results || []) as ResultRecord[];
+                const normalized = results.map((record) => ({
+                    ...record,
+                    id: record.id || record._id || '',
+                }));
+                setHistoryRecords(normalized);
+            } catch (err) {
+                console.error('Failed to load history:', err);
+                setHistoryRecords([]);
+            } finally {
+                if (mounted) {
+                    setHistoryLoading(false);
+                }
+            }
+        }
+
+        loadHistory();
+
+        return () => {
+            mounted = false;
+        };
+    }, []);
 
     const handleLogout = () => {
         logout();
@@ -46,6 +92,7 @@ function ProfilePage() {
             <nav className="dashboard-nav">
                 <div className="dashboard-nav-logo">HireReady</div>
                 <div className="dashboard-nav-actions">
+                    <ThemeToggle />
                     <button className="btn btn-ghost nav-tab" onClick={() => navigate('/skill-analysis')}>
                         🛠️ Skill Analysis
                     </button>
@@ -129,6 +176,81 @@ function ProfilePage() {
                             >
                                 Upload Resume →
                             </button>
+                        </div>
+                    )}
+                </div>
+
+                {/* Result History Section */}
+                <div className="profile-card" style={{ marginBottom: '1.5rem' }}>
+                    <h3 className="profile-section-title">📊 Test History</h3>
+                    {historyLoading ? (
+                        <div style={{ padding: '1rem', textAlign: 'center', opacity: 0.7 }}>
+                            ⏳ Loading test history...
+                        </div>
+                    ) : historyRecords.length === 0 ? (
+                        <div style={{ padding: '1rem', textAlign: 'center', opacity: 0.7 }}>
+                            📝 No test attempts yet. Start a mock test to see your results here.
+                        </div>
+                    ) : (
+                        <div style={{ overflowX: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
+                                <thead>
+                                    <tr>
+                                        {['Role', 'Score', 'Percentage', 'Date'].map((header) => (
+                                            <th
+                                                key={header}
+                                                style={{
+                                                    textAlign: 'left',
+                                                    padding: '10px 8px',
+                                                    borderBottom: '1px solid rgba(255,255,255,0.1)',
+                                                    fontSize: '14px',
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                {header}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {historyRecords.map((record) => {
+                                        const percentage = Math.round((record.score / record.totalQuestions) * 100);
+                                        return (
+                                            <tr key={record.id}>
+                                                <td style={{ padding: '10px 8px', fontSize: '14px' }}>{record.role}</td>
+                                                <td style={{ padding: '10px 8px', fontSize: '14px' }}>
+                                                    {record.score} / {record.totalQuestions}
+                                                </td>
+                                                <td style={{ padding: '10px 8px', fontSize: '14px' }}>
+                                                    <span
+                                                        style={{
+                                                            padding: '2px 8px',
+                                                            borderRadius: '4px',
+                                                            background:
+                                                                percentage >= 70
+                                                                    ? 'rgba(74, 222, 128, 0.2)'
+                                                                    : percentage >= 50
+                                                                    ? 'rgba(251, 191, 36, 0.2)'
+                                                                    : 'rgba(248, 113, 113, 0.2)',
+                                                            color:
+                                                                percentage >= 70
+                                                                    ? '#4ade80'
+                                                                    : percentage >= 50
+                                                                    ? '#fbbf24'
+                                                                    : '#f87171',
+                                                        }}
+                                                    >
+                                                        {percentage}%
+                                                    </span>
+                                                </td>
+                                                <td style={{ padding: '10px 8px', fontSize: '14px' }}>
+                                                    {new Date(record.createdAt).toLocaleDateString()}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
                         </div>
                     )}
                 </div>

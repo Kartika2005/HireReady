@@ -49,6 +49,43 @@
   --transition-slow: 400ms ease;
 }
 
+/* Light Mode Theme */
+body.theme-light {
+  --bg-primary: #f8f9fa;
+  --bg-secondary: #e9ecef;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1f3f5;
+  --bg-input: #ffffff;
+
+  --text-primary: #1a1a2e;
+  --text-secondary: #495057;
+  --text-muted: #868e96;
+  --text-accent: #6741d9;
+
+  --accent-primary: #6741d9;
+  --accent-secondary: #7950f2;
+  --accent-gradient: linear-gradient(135deg, #6741d9 0%, #7950f2 50%, #9775fa 100%);
+  --accent-glow: rgba(103, 65, 217, 0.2);
+
+  --success: #37b24d;
+  --error: #f03e3e;
+  --warning: #fd7e14;
+
+  --border-color: rgba(103, 65, 217, 0.2);
+  --border-subtle: rgba(0, 0, 0, 0.08);
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.1);
+  --shadow-glow: 0 0 30px rgba(103, 65, 217, 0.08);
+}
+
+body.theme-light::before {
+  background:
+    radial-gradient(ellipse 600px 400px at 20% 20%, rgba(103, 65, 217, 0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 500px 300px at 80% 80%, rgba(121, 80, 242, 0.03) 0%, transparent 70%);
+}
+
 /* Reset */
 *,
 *::before,

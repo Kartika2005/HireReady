@@ -1,6 +1,7 @@
 import { useState, useRef, ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import ThemeToggle from '../components/ThemeToggle';
 
 function ResumeUploadPage() {
     const { uploadResume } = useAuth();
@@ -45,7 +46,7 @@ function ResumeUploadPage() {
             await uploadResume(file);
             navigate('/dashboard', { replace: true });
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Failed to upload resume.');
+            setError(err.response?.data?.message || err.message || 'Upload failed');
         } finally {
             setIsUploading(false);
         }
@@ -53,6 +54,9 @@ function ResumeUploadPage() {
 
     return (
         <div className="auth-layout">
+            <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 1000 }}>
+                <ThemeToggle />
+            </div>
             <div className="auth-card" style={{ maxWidth: '520px' }}>
                 <div className="auth-header">
                     <h1>📄 Upload Your Resume</h1>

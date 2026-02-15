@@ -2,6 +2,7 @@ import { useState, useRef, ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import ThemeToggle from '../components/ThemeToggle';
 
 function SkillAnalysisPage() {
     const { user, uploadResume, refreshUser } = useAuth();
@@ -80,6 +81,7 @@ function SkillAnalysisPage() {
             <nav className="dashboard-nav">
                 <div className="dashboard-nav-logo">HireReady</div>
                 <div className="dashboard-nav-actions">
+                    <ThemeToggle />
                     <button className="btn btn-ghost nav-tab nav-tab-active" onClick={() => navigate('/skill-analysis')}>
                         🛠️ Skill Analysis
                     </button>
