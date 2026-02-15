@@ -51,6 +51,8 @@ export default function Result() {
 
     try {
       await api.post("/quiz/submit", {
+        role,
+        difficulty: "Medium", // Default difficulty since it's not tracked in this flow
         score: scoreData.score,
         totalQuestions: questions?.length ?? 0,
         answers

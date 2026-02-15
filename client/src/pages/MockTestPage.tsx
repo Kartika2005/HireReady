@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import ThemeToggle from "../components/ThemeToggle";
@@ -91,6 +91,25 @@ export default function MockTestPage() {
   const currentQuestion = questions[currentQuestionIndex];
   const score = useMemo(() => userAnswers.filter(a => a.isCorrect).length, [userAnswers]);
 
+  const handleSubmit = useCallback(async () => {
+    setTestState("results");
+    setSubmitting(true);
+    
+    try {
+      await api.post("/quiz/submit", {
+        role,
+        difficulty,
+        score,
+        totalQuestions: 10,
+        answers: userAnswers,
+      });
+    } catch (err: any) {
+      console.error("Submit error:", err);
+    } finally {
+      setSubmitting(false);
+    }
+  }, [role, difficulty, score, userAnswers]);
+
   // Timer countdown effect
   useEffect(() => {
     if (testState !== "testing" || timeLeft === 0) return;
@@ -122,7 +141,7 @@ export default function MockTestPage() {
         setSelectedAnswer("");
       }
     }
-  }, [timeLeft, testState]);
+  }, [timeLeft, testState, selectedAnswer, currentQuestionIndex, handleSubmit]);
 
   async function handleStart() {
     if (!role || !difficulty) {
@@ -176,25 +195,6 @@ export default function MockTestPage() {
     setCurrentQuestionIndex((prev) => prev + 1);
     setTimeLeft(60);
     setSelectedAnswer("");
-  }
-
-  async function handleSubmit() {
-    setTestState("results");
-    setSubmitting(true);
-    
-    try {
-      await api.post("/quiz/submit", {
-        role,
-        difficulty,
-        score,
-        totalQuestions: 10,
-        answers: userAnswers,
-      });
-    } catch (err: any) {
-      console.error("Submit error:", err);
-    } finally {
-      setSubmitting(false);
-    }
   }
 
   function handleRetest() {

@@ -28,7 +28,7 @@ router.post('/submit', auth, async (req: AuthRequest, res) => {
 
         const { role, difficulty, score, totalQuestions, answers } = req.body as SubmitPayload;
 
-        if (!role || typeof score !== 'number' || typeof totalQuestions !== 'number' || !answers) {
+        if (!role?.trim() || typeof score !== 'number' || typeof totalQuestions !== 'number' || !answers) {
             res.status(400).json({ message: 'Invalid payload.' });
             return;
         }
